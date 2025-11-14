@@ -1,0 +1,28 @@
+<?php
+// app/Models/Media.php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Media extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'filename',
+        'original_name',
+        'mime_type',
+        'path',
+        'thumbnail_path',
+        'size',
+        'user_id',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}
