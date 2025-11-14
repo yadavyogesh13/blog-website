@@ -55,7 +55,7 @@ class PostController extends Controller
         // Track analytics
         $this->trackView($post);
 
-        // Get related posts
+        // Get related posts (same category)
         $related_posts = Post::with(['user', 'category'])
             ->published()
             ->where('category_id', $post->category_id)
@@ -64,15 +64,25 @@ class PostController extends Controller
             ->take(3)
             ->get();
 
-        // SEO data from post's SEO or fallback
-        $seo = [
-            'title' => $post->getMetaTitle(),
-            'description' => $post->getMetaDescription(),
-            'keywords' => $post->seo->meta_keywords ?? '',
-            'canonical' => route('posts.show', $post->slug),
-        ];
+        // Get recent posts (all categories)
+        $recent_posts = Post::with(['user', 'category'])
+            ->published()
+            ->where('id', '!=', $post->id)
+            ->latest()
+            ->take(5)
+            ->get();
 
-        return view('posts.show', compact('post', 'related_posts', 'seo'));
+        // Get categories with post counts
+        $categories = Category::where('is_active', true)
+            ->withCount(['posts' => function($query) {
+                $query->published();
+            }])
+            ->having('posts_count', '>', 0)
+            ->orderBy('posts_count', 'desc')
+            ->take(10)
+            ->get();
+
+        return view('posts.show', compact('post', 'related_posts', 'recent_posts', 'categories'));
     }
 
     public function getPosts(Request $request)

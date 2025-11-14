@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Post extends Model
 {
@@ -84,11 +85,18 @@ class Post extends Model
     public function getMetaTitle()
     {
         return $this->seo->meta_title ?? $this->title;
+        // return $this->seo->meta_title ?? $this->title . ' - ' . config('app.name');
     }
 
     public function getMetaDescription()
     {
-        return $this->seo->meta_description ?? $this->excerpt;
+        // return $this->seo->meta_description ?? $this->excerpt;
+        return $this->seo->meta_description ?? Str::limit(strip_tags($this->excerpt), 160);
+    }
+
+    public function getFeaturedImageUrl()
+    {
+        return $this->featured_image ? Storage::url($this->featured_image) : asset('images/default-featured-image.jpg');
     }
 
     public function getRouteKeyName()
