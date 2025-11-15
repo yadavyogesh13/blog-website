@@ -17,6 +17,20 @@ Route::get('/posts/{post:slug}', [PostController::class, 'show'])->name('posts.s
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
+Route::get('/search/suggest', [SearchController::class, 'suggest'])->name('search.suggest');
+
+// Legal and Contact Pages
+Route::get('/privacy-policy', function () {
+    return view('pages.privacy-policy');
+})->name('privacy.policy');
+
+Route::get('/terms-of-service', function () {
+    return view('pages.terms-of-service');
+})->name('terms.service');
+
+Route::get('/contact', function () {
+    return view('pages.contact');
+})->name('contact');
 
 // Sitemap Route
 Route::get('/sitemap.xml', function() {

@@ -29,15 +29,28 @@ class PostController extends Controller
             });
         }
 
-        $posts = $query->latest()->paginate(12);
+        // Sort
+        if ($request->has('sort')) {
+            switch ($request->sort) {
+                case 'popular':
+                    $query->orderBy('views', 'desc');
+                    break;
+                case 'featured':
+                    $query->featured()->orderBy('published_at', 'desc');
+                    break;
+                default:
+                    $query->latest();
+                    break;
+            }
+        } else {
+            $query->latest();
+        }
+
+        $posts = $query->paginate(12);
         $categories = Category::where('is_active', true)->withCount('posts')->get();
 
-        $seo = [
-            'title' => 'All Articles - BlogSite',
-            'description' => 'Browse all articles on various topics including technology, lifestyle, business and more.',
-            'keywords' => 'articles, blog posts, stories, writing',
-            'canonical' => route('posts.index'),
-        ];
+        // SEO Data
+        $seo = $this->generateIndexSeo($request, $posts);
 
         return view('posts.index', compact('posts', 'categories', 'seo'));
     }
@@ -84,6 +97,58 @@ class PostController extends Controller
 
         return view('posts.show', compact('post', 'related_posts', 'recent_posts', 'categories'));
     }
+
+    /**
+     * Generate SEO data for posts index page
+     */
+    private function generateIndexSeo(Request $request, $posts)
+    {
+        $baseTitle = 'All Articles - ' . config('app.name');
+        $baseDescription = 'Browse all articles on various topics including technology, lifestyle, business and more.';
+        
+        $seo = [
+            'title' => $baseTitle,
+            'description' => $baseDescription,
+            'keywords' => 'articles, blog posts, stories, writing, technology, lifestyle, business',
+            'canonical' => url()->current(),
+        ];
+
+        // Category-specific SEO
+        if ($request->has('category') && $request->category) {
+            $category = Category::where('slug', $request->category)->first();
+            if ($category) {
+                $seo['title'] = $category->name . ' Articles - ' . config('app.name');
+                $seo['description'] = 'Browse all ' . $category->name . ' articles. ' . $category->description;
+                $seo['keywords'] = $category->name . ', ' . $seo['keywords'];
+            }
+        }
+
+        // Pagination SEO
+        if ($posts->currentPage() > 1) {
+            $seo['title'] .= ' - Page ' . $posts->currentPage();
+            $seo['description'] .= ' Page ' . $posts->currentPage();
+        }
+
+        return $seo;
+    }
+
+    /**
+     * Generate SEO-friendly slug
+     */
+    public function generateSlug($title)
+    {
+        $slug = Str::slug($title);
+        
+        // Check if slug exists
+        $count = Post::where('slug', 'LIKE', $slug . '%')->count();
+        
+        if ($count > 0) {
+            $slug = $slug . '-' . ($count + 1);
+        }
+        
+        return $slug;
+    }
+
 
     public function getPosts(Request $request)
     {

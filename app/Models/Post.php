@@ -133,4 +133,32 @@ class Post extends Model
             }
         });
     }
+
+     /**
+     * Get structured data for JSON-LD
+     */
+    public function getStructuredData()
+    {
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'Article',
+            'headline' => $this->title,
+            'description' => $this->getMetaDescription(),
+            'image' => $this->getFeaturedImageUrl(),
+            'datePublished' => $this->published_at->toIso8601String(),
+            'dateModified' => $this->updated_at->toIso8601String(),
+            'author' => [
+                '@type' => 'Person',
+                'name' => $this->user->name,
+            ],
+            'publisher' => [
+                '@type' => 'Organization',
+                'name' => config('app.name'),
+                'logo' => [
+                    '@type' => 'ImageObject',
+                    'url' => asset('images/logo.png'),
+                ],
+            ],
+        ];
+    }
 }

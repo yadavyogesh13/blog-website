@@ -44,6 +44,65 @@
     <style>
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        /* Smooth transitions for footer elements */
+        footer a, footer button {
+            transition: all 0.3s ease;
+        }
+
+        /* Back to top button styles */
+        #backToTop {
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        #backToTop.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Social icon hover effects */
+        .social-hover:hover {
+            transform: translateY(-2px);
+            transition: transform 0.3s ease;
+        }
+
+        /* Newsletter input focus effects */
+        footer input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Category icon colors */
+        .category-link:hover i {
+            color: inherit;
+        }
+
+        /* Mobile responsiveness improvements */
+        @media (max-width: 768px) {
+            footer .grid {
+                gap: 2rem;
+            }
+            
+            footer .text-sm {
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Dark mode enhancements */
+        .dark footer input::placeholder {
+            color: #9ca3af;
+        }
+
+        /* Loading animation for newsletter button */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
     </style>
     
     @stack('styles')
@@ -100,11 +159,163 @@
         @yield('content')
     </main>
 
-    <!-- Footer -->
+    <!-- Enhanced Footer -->
     <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="text-center text-gray-600 dark:text-gray-400">
-                <p>&copy; {{ date('Y') }} BlogSite. All rights reserved.</p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Main Footer Content -->
+            <div class="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Brand Section -->
+                <div class="lg:col-span-1">
+                    <div class="flex items-center mb-4">
+                        <a href="{{ route('home') }}" class="text-2xl font-bold text-gray-900 dark:text-white">
+                            BlogSite
+                        </a>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
+                        Discover insightful articles, tutorials, and stories. Join our community of readers and writers passionate about knowledge sharing.
+                    </p>
+                    <div class="flex space-x-4">
+                        <!-- Social Links -->
+                        <a href="#" class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200" aria-label="Facebook">
+                            <i class="fab fa-facebook-f text-lg"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200" aria-label="Twitter">
+                            <i class="fab fa-twitter text-lg"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 transition-colors duration-200" aria-label="Instagram">
+                            <i class="fab fa-instagram text-lg"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in text-lg"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200" aria-label="YouTube">
+                            <i class="fab fa-youtube text-lg"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Links</h3>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="{{ route('home') }}" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center">
+                                <i class="fas fa-home mr-2 text-sm"></i>
+                                Home
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('posts.index') }}" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center">
+                                <i class="fas fa-newspaper mr-2 text-sm"></i>
+                                All Articles
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('categories.index') }}" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center">
+                                <i class="fas fa-th-large mr-2 text-sm"></i>
+                                Categories
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('search') }}" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center">
+                                <i class="fas fa-search mr-2 text-sm"></i>
+                                Search
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Categories -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Categories</h3>
+                    <ul class="space-y-3">
+                        @php
+                            $topCategories = [
+                                'Technology' => 'fas fa-laptop-code',
+                                'Programming' => 'fas fa-code',
+                                'Web Development' => 'fas fa-globe',
+                                'Lifestyle' => 'fas fa-heart',
+                                'Business' => 'fas fa-briefcase',
+                                'Health' => 'fas fa-heartbeat'
+                            ];
+                        @endphp
+                        @foreach($topCategories as $category => $icon)
+                        <li>
+                            <a href="{{ route('search') }}?q={{ urlencode($category) }}" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center">
+                                <i class="{{ $icon }} mr-2 text-sm"></i>
+                                {{ $category }}
+                            </a>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                <!-- Newsletter -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Stay Updated</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                        Get the latest articles and updates delivered directly to your inbox.
+                    </p>
+                    <form class="space-y-3">
+                        @csrf
+                        <div class="relative">
+                            <input 
+                                type="email" 
+                                name="email"
+                                placeholder="Enter your email"
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 pr-12"
+                                required
+                                aria-label="Email for newsletter"
+                            >
+                            <button 
+                                type="submit"
+                                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                                aria-label="Subscribe to newsletter"
+                            >
+                                <i class="fas fa-paper-plane text-sm"></i>
+                            </button>
+                        </div>
+                    </form>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        No spam ever. Unsubscribe at any time.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Bottom Footer -->
+            <div class="border-t border-gray-200 dark:border-gray-700 py-6">
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <!-- Copyright -->
+                    <div class="text-gray-600 dark:text-gray-400 text-sm">
+                        <p>&copy; {{ date('Y') }} BlogSite. All rights reserved.</p>
+                    </div>
+
+                    <!-- Legal Links -->
+                    <div class="flex flex-wrap items-center space-x-6 text-sm">
+                        <a href="/privacy-policy" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
+                            Privacy Policy
+                        </a>
+                        <a href="/terms-of-service" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
+                            Terms of Service
+                        </a>
+                        <a href="/contact" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
+                            Contact
+                        </a>
+                        <a href="/sitemap.xml" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
+                            Sitemap
+                        </a>
+                    </div>
+
+                    <!-- Back to Top -->
+                    <button 
+                        id="backToTop" 
+                        class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center text-sm"
+                        aria-label="Back to top"
+                    >
+                        <i class="fas fa-arrow-up mr-2"></i>
+                        Back to Top
+                    </button>
+                </div>
             </div>
         </div>
     </footer>
@@ -167,6 +378,87 @@
                         }
                     })
                     .catch(error => console.error('Error:', error));
+                });
+            });
+        });
+
+        // Back to Top functionality
+        const backToTopButton = document.getElementById('backToTop');
+        
+        if (backToTopButton) {
+            // Show/hide back to top button based on scroll position
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    backToTopButton.classList.remove('opacity-0', 'invisible');
+                    backToTopButton.classList.add('opacity-100', 'visible');
+                } else {
+                    backToTopButton.classList.remove('opacity-100', 'visible');
+                    backToTopButton.classList.add('opacity-0', 'invisible');
+                }
+            });
+
+            // Smooth scroll to top
+            backToTopButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
+        // Newsletter form handling
+        document.addEventListener('DOMContentLoaded', function() {
+            const newsletterForm = document.querySelector('footer form');
+            
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const emailInput = this.querySelector('input[type="email"]');
+                    const submitButton = this.querySelector('button[type="submit"]');
+                    const originalText = submitButton.innerHTML;
+                    
+                    if (!emailInput.value) {
+                        return;
+                    }
+                    
+                    // Show loading state
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    submitButton.disabled = true;
+                    
+                    // Simulate API call - replace with actual newsletter subscription
+                    setTimeout(() => {
+                        // Show success message
+                        const successMessage = document.createElement('div');
+                        successMessage.className = 'mt-3 p-3 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg text-sm';
+                        successMessage.innerHTML = 'Thank you for subscribing! Check your email to confirm.';
+                        
+                        this.appendChild(successMessage);
+                        emailInput.value = '';
+                        
+                        // Reset button after 3 seconds
+                        setTimeout(() => {
+                            submitButton.innerHTML = originalText;
+                            submitButton.disabled = false;
+                            successMessage.remove();
+                        }, 3000);
+                    }, 1000);
+                });
+            }
+        });
+
+        // Add smooth hover effects for social icons
+        document.addEventListener('DOMContentLoaded', function() {
+            const socialLinks = document.querySelectorAll('footer a[aria-label*="Facebook"], footer a[aria-label*="Twitter"], footer a[aria-label*="Instagram"], footer a[aria-label*="LinkedIn"], footer a[aria-label*="YouTube"]');
+            
+            socialLinks.forEach(link => {
+                link.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                });
+                
+                link.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
                 });
             });
         });
