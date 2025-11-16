@@ -1,59 +1,184 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Blog Website
 
-## About Laravel
+A lightweight blog/CMS built with Laravel. This repository provides admin and public-facing functionality including posts, categories, media, SEO, newsletter subscriptions, likes/bookmarks, and an admin panel with CRUD (including soft deletes, restore, and permanent delete).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Admin Side Url is http://127.0.0.1:8000/admin/login
+email: admin@blog.com
+password: password
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Table of Contents
+- **Project:** Brief description and features
+- **Requirements:** PHP, Composer, MySQL, Node
+- **Quick Setup:** Steps to get the app running locally
+- **Database & Migrations:** running and rolling back migrations
+- **Queues & Mail:** configuring mail and queue workers
+- **Development:** run dev server and assets
+- **Testing:** basic testing commands
+- **Security Notes:** important configuration and recommended fixes
+- **Troubleshooting:** common issues and commands
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Project
+- Framework: Laravel (PHP)
+- Frontend: Blade + Tailwind CSS, some vanilla JS
+- Key features: posts (with slug routing), categories, media, admin panel, CKEditor integration for rich content, newsletter subscription, likes/bookmarks, soft deletes + restore/force-delete
 
-## Learning Laravel
+## Requirements
+- PHP 8.0+ (match your project's composer.json)
+- Composer
+- MySQL (or compatible DB)
+- Node.js + npm (for building assets)
+- Windows (this repo was edited on Windows - commands below use PowerShell syntax)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Quick Setup (local)
+1. Clone repository
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+	 git clone <repo-url>
+	 cd blog-website
 
-## Laravel Sponsors
+2. Install PHP dependencies
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```powershell
+composer install
+```
 
-### Premium Partners
+3. Install JS dependencies and build assets (optional for development)
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```powershell
+npm install
+npm run dev
+```
 
-## Contributing
+4. Copy `.env` and set environment values
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```powershell
+copy .env.example .env
+# then edit .env with your DB and mail settings
+```
 
-## Code of Conduct
+- `APP_URL` should point to your local URL (e.g. `http://localhost`)
+- Set `DB_CONNECTION`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+5. Generate application key
 
-## Security Vulnerabilities
+```powershell
+php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+6. Run migrations & seeders
 
-## License
+```powershell
+php artisan migrate --seed
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+7. Create storage symlink (if using public disk)
+
+```powershell
+php artisan storage:link
+```
+
+8. Run local development server
+
+```powershell
+php artisan serve --host=127.0.0.1 --port=8000
+```
+
+Then open `http://127.0.0.1:8000`.
+
+## Database & Migrations
+- Run migrations: `php artisan migrate`
+- Rollback: `php artisan migrate:rollback`
+- Recreate: `php artisan migrate:fresh --seed`
+
+If you added `deleted_at`/SoftDeletes migrations (the project includes such migrations), run migrations after pulling latest code.
+
+## Queues & Mail
+- By default this project may use `QUEUE_CONNECTION=database` for queued mail.
+- For local testing you can set `QUEUE_CONNECTION=sync` in `.env` to avoid running a worker (emails will be sent synchronously).
+
+Better local flow with Gmail (not recommended for production):
+- Enable 2-Step Verification on your Google account and create an App Password. Use the 16-char App Password in `MAIL_PASSWORD`.
+- Or use Mailtrap for safe testing (replace SMTP settings with Mailtrap credentials).
+
+Run a queue worker to process queued jobs:
+
+```powershell
+php artisan queue:work --tries=3
+```
+
+Check failed jobs:
+
+```powershell
+php artisan queue:failed
+php artisan queue:retry all
+php artisan queue:flush
+```
+
+## Development
+- Build assets in watch mode:
+
+```powershell
+npm run dev
+# or
+npm run watch
+```
+
+- Run PHP built-in server:
+
+```powershell
+php artisan serve
+```
+
+## Testing
+- Run PHPUnit tests (if present):
+
+```powershell
+vendor\\bin\\phpunit
+# or
+php artisan test
+```
+
+## Security Notes (important)
+This project is functional but requires a few security hardenings before production. Priorities:
+
+- **Rate limiting**: Add throttle middleware to sensitive endpoints (login, newsletter subscribe, like API) to prevent abuse.
+	- Example: `Route::post('/login', ...)->middleware('throttle:5,1');`
+
+- **File upload validation**: Enforce strict image validation (mime, max size, dimensions). Do not rely solely on extension.
+
+- **Escape user content in server-rendered HTML**: When you return raw HTML from controllers (e.g., DataTables HTML columns), make sure content is escaped to avoid XSS. Use `e()` or `htmlspecialchars()`.
+
+- **Security headers**: Add middleware to inject `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and `Strict-Transport-Security` (if using HTTPS).
+
+- **Queue & Mail**: Ensure `MAIL_PASSWORD` is an app-specific password (for Gmail) and `.env` is never committed. Use a transactional email provider for production.
+
+- **Tokens in URLs**: Newsletter verification and unsubscribe links use tokens in GET URLs. Consider POST verification or short-lived tokens if this is a concern.
+
+- **Session cookie settings**: In `.env` / config ensure `SESSION_SECURE_COOKIE=true` in production and `SESSION_HTTP_ONLY=true`.
+
+## Troubleshooting
+- `Auth guard [admin] is not defined` → run `php artisan config:clear` after adding the `admin` guard to `config/auth.php`.
+- `Target class [admin] does not exist` → ensure middleware alias is registered correctly in `bootstrap/app.php` (use `$middleware->alias([...])`).
+- Mail failures with Gmail: use App Passwords or Mailtrap; check `storage/logs/laravel.log` for SMTP errors.
+
+## Useful Commands
+- Clear config & cache:
+
+```powershell
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
+```
+
+- Run migrations:
+
+```powershell
+php artisan migrate
+```
+
+- Start worker:
+
+```powershell
+php artisan queue:work
+```
