@@ -4,7 +4,12 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SearchController;
-use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\LikeController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
@@ -32,22 +37,46 @@ Route::get('/contact', function () {
     return view('pages.contact');
 })->name('contact');
 
+// Newsletter Routes
+Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+Route::get('/newsletter/verify/{token}', [NewsletterController::class, 'verify'])->name('newsletter.verify');
+Route::get('/newsletter/unsubscribe/{token}', [NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
+Route::get('/newsletter/stats', [NewsletterController::class, 'stats'])->name('newsletter.stats');
+
 // Sitemap Route
 Route::get('/sitemap.xml', function() {
     return response()->view('sitemap')->header('Content-Type', 'text/xml');
 });
 
+// User Authentication Routes
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Password Reset Routes
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
+
+// Like routes (protected)
+Route::middleware(['auth'])->group(function () {
+    Route::post('/posts/{post}/like', [LikeController::class, 'toggle'])->name('posts.like');
+    Route::post('/posts/{post}/bookmark', [LikeController::class, 'bookmark'])->name('posts.bookmark');
+});
 
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
     
-    // Authentication
-    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    // Admin Authentication
+    Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AdminAuthController::class, 'login']);
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 
-    // Protected Routes
-    Route::middleware(['auth'])->group(function () {
+    // Protected Admin Routes
+    Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         
         // Posts - AJAX CRUD routes
@@ -61,7 +90,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/posts/{post}/restore', [AdminPostController::class, 'restore'])->name('posts.restore')->where('post', '[0-9]+');
         Route::delete('/posts/{post}/force-delete', [AdminPostController::class, 'forceDestroy'])->name('posts.forceDelete')->where('post', '[0-9]+');
         
-        // Admin Routes - Add this inside your admin middleware group
         Route::post('/upload', [AdminPostController::class, 'upload'])->name('upload');
 
         // Categories - AJAX CRUD routes
@@ -85,17 +113,4 @@ Route::prefix('api')->group(function () {
     Route::get('/featured-posts', [HomeController::class, 'getFeaturedPosts'])->name('api.featured-posts');
     Route::get('/recent-posts', [HomeController::class, 'getRecentPosts'])->name('api.recent-posts');
     Route::get('/popular-posts', [HomeController::class, 'getPopularPosts'])->name('api.popular-posts');
-});
-
-// Authentication Routes
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-// Like routes (protected)
-Route::middleware(['auth'])->group(function () {
-    Route::post('/posts/{post}/like', [LikeController::class, 'toggle'])->name('posts.like');
-    Route::post('/posts/{post}/bookmark', [LikeController::class, 'bookmark'])->name('posts.bookmark');
 });

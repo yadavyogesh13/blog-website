@@ -140,10 +140,16 @@
                     </button>
 
                     @auth
-                        <!-- User Menu -->
-                        <div class="relative">
-                            <img class="h-8 w-8 rounded-full" src="{{ auth()->user()->avatar ?? '/images/default-avatar.png' }}" alt="{{ auth()->user()->name }}">
-                        </div>
+                        <!-- Simple Logout Button -->
+                        <form method="POST" action="{{ route('logout') }}" class="inline">
+                            @csrf
+                            <button 
+                                type="submit"
+                                class="text-gray-700 dark:text-gray-200 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
+                            >
+                                Logout
+                            </button>
+                        </form>
                     @else
                         <!-- Auth Links -->
                         <a href="{{ route('login') }}" class="text-gray-700 dark:text-gray-200 hover:text-accent-600 dark:hover:text-accent-400 transition-colors">Login</a>
@@ -256,25 +262,33 @@
                     <p class="text-gray-600 dark:text-gray-400 mb-4 text-sm">
                         Get the latest articles and updates delivered directly to your inbox.
                     </p>
-                    <form class="space-y-3">
+                    <form class="space-y-3 newsletter-form" id="newsletterForm">
                         @csrf
+                        <input type="hidden" name="source" value="footer">
                         <div class="relative">
                             <input 
                                 type="email" 
                                 name="email"
+                                id="newsletterEmail"
                                 placeholder="Enter your email"
                                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 pr-12"
                                 required
                                 aria-label="Email for newsletter"
+                                aria-describedby="newsletter-error newsletter-success"
                             >
                             <button 
                                 type="submit"
-                                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
                                 aria-label="Subscribe to newsletter"
+                                id="newsletterSubmit"
                             >
                                 <i class="fas fa-paper-plane text-sm"></i>
                             </button>
                         </div>
+                        
+                        <!-- Status Messages -->
+                        <div id="newsletter-success" class="hidden p-3 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg text-sm"></div>
+                        <div id="newsletter-error" class="hidden p-3 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-lg text-sm"></div>
                     </form>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
                         No spam ever. Unsubscribe at any time.
@@ -361,8 +375,10 @@
                     
                     fetch(`/posts/${postId}/like`, {
                         method: 'POST',
+                        credentials: 'same-origin',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         },
                         body: JSON.stringify({})
@@ -461,6 +477,110 @@
                     this.style.transform = 'translateY(0)';
                 });
             });
+        });
+
+        // Newsletter functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const newsletterForm = document.getElementById('newsletterForm');
+            const newsletterEmail = document.getElementById('newsletterEmail');
+            const newsletterSubmit = document.getElementById('newsletterSubmit');
+            const newsletterSuccess = document.getElementById('newsletter-success');
+            const newsletterError = document.getElementById('newsletter-error');
+
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const email = newsletterEmail.value.trim();
+                    const submitButton = newsletterSubmit;
+                    const originalHTML = submitButton.innerHTML;
+
+                    // Hide previous messages
+                    newsletterSuccess.classList.add('hidden');
+                    newsletterError.classList.add('hidden');
+
+                    // Basic email validation
+                    if (!email || !isValidEmail(email)) {
+                        showNewsletterError('Please enter a valid email address.');
+                        return;
+                    }
+
+                    // Show loading state
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    submitButton.disabled = true;
+
+                    try {
+                        const response = await fetch('/newsletter/subscribe', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                email: email,
+                                source: 'website_footer'
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            showNewsletterSuccess(data.message);
+                            newsletterForm.reset();
+                        } else {
+                            showNewsletterError(data.message || 'Something went wrong. Please try again.');
+                        }
+
+                    } catch (error) {
+                        console.error('Newsletter subscription error:', error);
+                        showNewsletterError('Network error. Please check your connection and try again.');
+                    } finally {
+                        // Reset button
+                        submitButton.innerHTML = originalHTML;
+                        submitButton.disabled = false;
+                    }
+                });
+            }
+
+            function showNewsletterSuccess(message) {
+                newsletterSuccess.textContent = message;
+                newsletterSuccess.classList.remove('hidden');
+                newsletterError.classList.add('hidden');
+                
+                // Auto-hide success message after 5 seconds
+                setTimeout(() => {
+                    newsletterSuccess.classList.add('hidden');
+                }, 5000);
+            }
+
+            function showNewsletterError(message) {
+                newsletterError.textContent = message;
+                newsletterError.classList.remove('hidden');
+                newsletterSuccess.classList.add('hidden');
+            }
+
+            function isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+
+            // Real-time email validation
+            if (newsletterEmail) {
+                newsletterEmail.addEventListener('blur', function() {
+                    const email = this.value.trim();
+                    if (email && !isValidEmail(email)) {
+                        this.classList.add('border-red-500');
+                    } else {
+                        this.classList.remove('border-red-500');
+                    }
+                });
+
+                newsletterEmail.addEventListener('input', function() {
+                    this.classList.remove('border-red-500');
+                    newsletterError.classList.add('hidden');
+                });
+            }
         });
     </script>
     
