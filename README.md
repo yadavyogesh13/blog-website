@@ -12,7 +12,32 @@ Project Screenshots
 # Home Page
 ![Home Page](./screenshots/HomePageHeroSection.png)
 
+# Blog Section
+![Blog Section](./screenshots/BlogSectionHomePage.png)
 
+# Artical Page
+![Artical Page](./screenshots/ArticalPage.png)
+
+# Category Page
+![Category Page](./screenshots/CategoryPage.png)
+
+# Search Page
+![Search Page](./screenshots/SearchPage.png)
+
+# Footer Section
+![Footer Section](./screenshots/FooterSection.png)
+
+# Admin Dashboard Page
+![Admin Dashboard Page](./screenshots/AdminDashboard.png)
+
+# Admin Category Page
+![Admin Category Page](./screenshots/AdminCateggoryPage.png)
+
+# Admin PostManagement Page
+![Admin PostManagement Page](./screenshots/AdminPostManagementPage.png)
+
+# Admin Post Create
+![Admin Post Page](./screenshots/AdminPostCreate.png)
 
 ## Table of Contents
 - **Project:** Brief description and features
