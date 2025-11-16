@@ -7,6 +7,13 @@ Admin Side Url is http://127.0.0.1:8000/admin/login
 email: admin@blog.com
 password: password
 
+Project Screenshots
+
+# Home Page
+![Home Page](./screenshots/HomePageHeroSection.png)
+
+
+
 ## Table of Contents
 - **Project:** Brief description and features
 - **Requirements:** PHP, Composer, MySQL, Node
