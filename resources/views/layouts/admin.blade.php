@@ -29,6 +29,7 @@
                         'fade-in': 'fadeIn 0.5s ease-in-out',
                         'slide-in-left': 'slideInLeft 0.3s ease-out',
                         'bounce-subtle': 'bounceSubtle 2s infinite',
+                        'fade-in-up': 'fadeInUp 0.3s ease-out',
                     },
                     keyframes: {
                         fadeIn: {
@@ -42,6 +43,10 @@
                         bounceSubtle: {
                             '0%, 100%': { transform: 'translateY(0)' },
                             '50%': { transform: 'translateY(-5px)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
                         }
                     }
                 }
@@ -184,7 +189,7 @@
                         </li>
                         
                         <!-- Divider -->
-                        <li class="pt-6 mt-4 border-t border-white/10">
+                        {{-- <li class="pt-6 mt-4 border-t border-white/10">
                             <form method="POST" action="{{ route('admin.logout') }}" class="w-full">
                                 @csrf
                                 <button type="submit" class="nav-link flex items-center p-4 rounded-xl hover:bg-red-500/20 w-full text-left transition-all duration-200 group">
@@ -194,21 +199,50 @@
                                     <span class="nav-text ml-4 font-medium text-red-300 group-hover:text-red-200">Logout</span>
                                 </button>
                             </form>
-                        </li>
+                        </li> --}}
                     </ul>
                 </div>
                 
-                <!-- User Info -->
+                <!-- User Info with Dropdown -->
                 <div class="p-6 border-t border-white/10">
-                    <div class="flex items-center space-x-4">
-                        <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center shadow-lg">
-                            <i class="fas fa-user-cog text-white/80"></i>
+                    <div class="relative group">
+                        <button id="userMenuButton" class="flex items-center space-x-4 w-full text-left hover:bg-white/5 p-3 rounded-xl transition-all duration-200">
+                            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center shadow-lg">
+                                @if(auth()->user()->avatar)
+                                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Avatar" class="w-12 h-12 rounded-xl object-cover">
+                                @else
+                                    <i class="fas fa-user-cog text-white/80"></i>
+                                @endif
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-white truncate">{{ auth()->user()->name }}</p>
+                                <p class="text-xs text-white/60 truncate">{{ auth()->user()->email }}</p>
+                            </div>
+                            <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                            <i class="fas fa-chevron-down text-white/60 text-xs transition-transform duration-200 group-hover:rotate-180"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="userDropdown" class="absolute bottom-full left-0 mb-2 w-full bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible transform scale-95 transition-all duration-200 group-hover:opacity-100 group-hover:visible group-hover:scale-100 z-50">
+                            <div class="p-2">
+                                <a href="{{ route('admin.profile') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors duration-200">
+                                    <i class="fas fa-user-edit text-primary-600 w-5"></i>
+                                    <span class="font-medium">Edit Profile</span>
+                                </a>
+                                <a href="{{ route('admin.profile.password') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors duration-200">
+                                    <i class="fas fa-key text-primary-600 w-5"></i>
+                                    <span class="font-medium">Change Password</span>
+                                </a>
+                                <div class="border-t border-gray-200 my-1"></div>
+                                <form method="POST" action="{{ route('admin.logout') }}">
+                                    @csrf
+                                    <button type="submit" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-red-50 text-red-600 w-full text-left transition-colors duration-200">
+                                        <i class="fas fa-sign-out-alt w-5"></i>
+                                        <span class="font-medium">Logout</span>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-white truncate">Administrator</p>
-                            <p class="text-xs text-white/60 truncate">admin@example.com</p>
-                        </div>
-                        <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
                     </div>
                 </div>
             </div>
@@ -253,7 +287,7 @@
                 </div>
 
                 <!-- Page Content -->
-                <div class="max-6xl mx-auto">
+                <div class="max-w-6xl mx-auto">
                     @yield('content')
                 </div>
             </div>
@@ -268,6 +302,8 @@
             const mobileMenuToggle = document.getElementById('mobileMenuToggle');
             const overlay = document.getElementById('overlay');
             const mainContent = document.getElementById('mainContent');
+            const userMenuButton = document.getElementById('userMenuButton');
+            const userDropdown = document.getElementById('userDropdown');
             
             // Desktop sidebar toggle
             if (sidebarToggle) {
@@ -308,6 +344,35 @@
                     this.closest('.bg-green-50, .bg-red-50').style.display = 'none';
                 });
             });
+            
+            // User dropdown functionality
+            if (userMenuButton && userDropdown) {
+                let dropdownTimeout;
+                
+                userMenuButton.addEventListener('mouseenter', function() {
+                    clearTimeout(dropdownTimeout);
+                    userDropdown.classList.add('opacity-100', 'visible', 'scale-100');
+                    userDropdown.classList.remove('opacity-0', 'invisible', 'scale-95');
+                });
+                
+                userMenuButton.addEventListener('mouseleave', function() {
+                    dropdownTimeout = setTimeout(() => {
+                        userDropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+                        userDropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+                    }, 300);
+                });
+                
+                userDropdown.addEventListener('mouseenter', function() {
+                    clearTimeout(dropdownTimeout);
+                });
+                
+                userDropdown.addEventListener('mouseleave', function() {
+                    dropdownTimeout = setTimeout(() => {
+                        userDropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+                        userDropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+                    }, 300);
+                });
+            }
         });
     </script>
     

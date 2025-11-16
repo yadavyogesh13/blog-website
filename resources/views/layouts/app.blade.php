@@ -139,7 +139,7 @@
                         </svg>
                     </button>
 
-                    @auth
+                    {{-- @auth
                         <!-- Simple Logout Button -->
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
@@ -154,7 +154,7 @@
                         <!-- Auth Links -->
                         <a href="{{ route('login') }}" class="text-gray-700 dark:text-gray-200 hover:text-accent-600 dark:hover:text-accent-400 transition-colors">Login</a>
                         <a href="{{ route('register') }}" class="bg-accent-500 text-white px-4 py-2 rounded-lg hover:bg-accent-600 transition-colors">Sign Up</a>
-                    @endauth
+                    @endauth --}}
                 </div>
             </div>
         </div>

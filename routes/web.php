@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\AdminProfileController;
 use Illuminate\Support\Facades\Route;
 
 // Frontend Routes
@@ -79,6 +80,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         
+        Route::get('/profile', [AdminProfileController::class, 'edit'])->name('profile');
+        Route::put('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
+        Route::get('/profile/password', [AdminProfileController::class, 'editPassword'])->name('profile.password');
+        Route::put('/profile/password', [AdminProfileController::class, 'updatePassword'])->name('profile.password.update');
+
         // Posts - AJAX CRUD routes
         Route::get('/posts/create', [AdminPostController::class, 'create'])->name('posts.create');
         Route::get('/posts/data', [AdminPostController::class, 'getPostsData'])->name('posts.data');
